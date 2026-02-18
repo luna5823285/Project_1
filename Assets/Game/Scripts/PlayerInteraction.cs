@@ -115,6 +115,14 @@ public class PlayerInteraction : MonoBehaviour
             return;
         }
 
+        // FrameView 컴포넌트가 있는지 확인
+        FrameView frame = interactable.GetComponent<FrameView>();
+        if (frame != null)
+        {
+            frame.Interact();
+            return;
+        }
+
         // 그 외 상호작용 가능한 오브젝트 추가 가능
     }
 

@@ -2,6 +2,7 @@
 // PlayerInventory.cs
 // 플레이어의 인벤토리를 관리하는 스크립트
 // 열쇠 보유 여부와 현재 열쇠 타입을 저장
+// 0.1.0: 씬 전환 시 GameManager에서 열쇠 상태 복원
 // ============================================================
 
 using UnityEngine;
@@ -17,6 +18,19 @@ public class PlayerInventory : MonoBehaviour
     
     // 현재 보유 중인 열쇠 타입 (A 또는 B)
     public KeyType currentKey;
+
+    // ============================================================
+    // Unity 생명주기 - Start
+    // 씬 시작 시 GameManager에서 열쇠 상태 복원
+    // ============================================================
+    private void Start()
+    {
+        // GameManager에 저장된 열쇠 상태가 있으면 복원
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.LoadKeyState(this);
+        }
+    }
 
     // ============================================================
     // 열쇠 획득 메서드

@@ -7,12 +7,12 @@
 public enum KeyType
 {
     A,  // 열쇠 A (잘못된 열쇠)
-    B   // 열쇠 B (올바른 열쇠)
+    B   // 열쇠 B (올바른 열쇠 - door_2를 열 수 있음)
 }
 
 // 문 타입: 씬에 배치되는 문의 종류
 public enum DoorType
 {
-    Move,    // 이동용 문: 다음 씬으로 이동 (0.0.1에서는 미사용)
-    Ending   // 엔딩용 문: 올바른 열쇠로 열면 엔딩 씬으로 이동
+    Move,    // 이동용 문: 다음 씬으로 이동 (door_1: Game_Map_1 → Game_Map_2)
+    Ending   // 엔딩용 문: 올바른 열쇠로 열면 엔딩 씬으로 이동 (door_2)
 }
