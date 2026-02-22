@@ -51,20 +51,28 @@ public class CutsceneManager : MonoBehaviour
     // ============================================================
     private IEnumerator PlayAndTransition()
     {
-        Debug.Log($"[Cutscene] 커트씬 재생 시작 ({cutsceneDuration}초)");
-        
-        // 애니메이터가 있으면 재생 트리거
+        Debug.Log("[Cutscene] 커트씬 재생 시작");
+
         if (cutsceneAnimator != null)
         {
+            // 애니메이터 트리거 → 한 프레임 대기 후 애니메이션 상태 감지
             cutsceneAnimator.SetTrigger("Play");
+            yield return null; // 애니메이터가 상태를 전환할 때까지 한 프레임 대기
+
+            // 애니메이션이 완전히 끝날 때까지 대기 (normalizedTime >= 1)
+            yield return new WaitUntil(() =>
+            {
+                var state = cutsceneAnimator.GetCurrentAnimatorStateInfo(0);
+                return state.normalizedTime >= 1f && !cutsceneAnimator.IsInTransition(0);
+            });
         }
-        
-        // 지정된 시간만큼 대기
-        yield return new WaitForSeconds(cutsceneDuration);
-        
+        else
+        {
+            // 애니메이터가 없으면 고정 시간 대기
+            yield return new WaitForSeconds(cutsceneDuration);
+        }
+
         Debug.Log($"[Cutscene] 커트씬 완료 → {nextSceneName} 씬으로 이동");
-        
-        // 다음 씬으로 전환
         SceneManager.LoadScene(nextSceneName);
     }
 }

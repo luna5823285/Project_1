@@ -16,9 +16,6 @@ public class PlayerInteraction : MonoBehaviour
     
     // 상호작용 가능 범위 (플레이어 주변 반경)
     public float interactionRadius = 1.5f;
-    
-    // 상호작용 가능한 오브젝트의 레이어 (예: "Interactable" 레이어)
-    public LayerMask interactableLayer;
 
     // ============================================================
     // 내부 변수
@@ -53,19 +50,23 @@ public class PlayerInteraction : MonoBehaviour
     // ============================================================
     private void DetectInteractable()
     {
-        // OverlapCircle을 사용하여 플레이어 주변의 모든 Collider2D 검색
-        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, interactionRadius, interactableLayer);
+        // 레이어 상관없이 반경 내 모든 Collider2D 검색
+        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, interactionRadius);
 
         GameObject previousInteractable = currentInteractable;
+        currentInteractable = null;
 
-        // 가장 가까운 오브젝트를 현재 상호작용 대상으로 설정
-        if (hits.Length > 0)
+        // 범위 내 오브젝트 중 상호작용 가능한 컴포넌트가 있는 것 찾기
+        foreach (Collider2D hit in hits)
         {
-            currentInteractable = hits[0].gameObject;
-        }
-        else
-        {
-            currentInteractable = null;
+            GameObject obj = hit.gameObject;
+            if (obj.GetComponent<Drawer>() != null ||
+                obj.GetComponent<Door>() != null ||
+                obj.GetComponent<FrameView>() != null)
+            {
+                currentInteractable = obj;
+                break;
+            }
         }
 
         // 상호작용 대상이 바뀌면 UI 업데이트

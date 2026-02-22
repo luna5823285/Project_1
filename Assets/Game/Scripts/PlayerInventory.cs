@@ -38,12 +38,17 @@ public class PlayerInventory : MonoBehaviour
     // ============================================================
     public void SetKey(KeyType key)
     {
-        hasKey = true;           // 열쇠 보유 상태로 변경
-        currentKey = key;        // 선택한 열쇠 타입 저장
+        hasKey = true;
+        currentKey = key;
+        
+        // 키 획득 즉시 GameManager에 저장 (씬 전환 시 door 연결 여부와 무관하게 보존)
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.SaveKeyState(this);
+        }
         
         Debug.Log($"[Inventory] 열쇠 획득: {key}");
         
-        // 화면에 메시지 표시
         string keyName = key == KeyType.A ? "A" : "B";
         MessageUI.Instance?.ShowMessage($"Got Key {keyName}");
     }

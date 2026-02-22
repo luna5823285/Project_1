@@ -66,11 +66,17 @@
     <Compile Include="Assets\_Core\EndingManager.cs" />
     <Compile Include="Assets\_Core\InteractionPromptUI.cs" />
     <Compile Include="Assets\Game\Player\PlayerMove2D.cs" />
+    <Compile Include="Assets\Game\Scripts\FrameViewPanel.cs" />
+    <Compile Include="Assets\Game\Scripts\DoorConfirmPopup.cs" />
+    <Compile Include="Assets\Game\Scripts\MapExitTrigger.cs" />
     <Compile Include="Assets\_Core\GameManager.cs" />
     <Compile Include="Assets\Game\Scripts\PlayerInventory.cs" />
+    <Compile Include="Assets\Game\Scripts\FrameView.cs" />
     <Compile Include="Assets\_Core\GameTypes.cs" />
+    <Compile Include="Assets\_Core\CutsceneManager.cs" />
     <Compile Include="Assets\Game\Scripts\KeySelectPopup.cs" />
     <Compile Include="Assets\Game\Scripts\InteractionPrompt.cs" />
+    <Compile Include="Assets\_Core\TitleManager.cs" />
     <Compile Include="Assets\Game\Scripts\Drawer.cs" />
     <Compile Include="Assets\Game\Scripts\Door.cs" />
   </ItemGroup>
