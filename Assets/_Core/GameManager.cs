@@ -25,20 +25,33 @@ public class GameManager : MonoBehaviour
     public KeyType savedCurrentKey;
 
     // ============================================================
+    // 자동 생성 - 어느 씬에서 시작해도 GameManager 존재 보장
+    // ============================================================
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    private static void AutoCreate()
+    {
+        if (Instance == null)
+        {
+            GameObject go = new GameObject("GameManager");
+            go.AddComponent<GameManager>();
+        }
+    }
+
+    // ============================================================
     // Unity 생명주기 - Awake
     // 싱글톤 초기화 및 DontDestroyOnLoad 설정
     // ============================================================
     private void Awake()
     {
-        // 싱글톤 패턴: 이미 인스턴스가 존재하면 현재 오브젝트 파괴
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject); // 씬 전환 시에도 파괴되지 않음
+            DontDestroyOnLoad(gameObject);
+            Debug.Log("[GameManager] 싱글톤 초기화 완료");
         }
         else
         {
-            Destroy(gameObject); // 중복 인스턴스 제거
+            Destroy(gameObject);
         }
     }
 

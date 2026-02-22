@@ -33,10 +33,9 @@ public class PlayerInteraction : MonoBehaviour
         // 1. 주변의 상호작용 가능한 오브젝트 감지
         DetectInteractable();
 
-        // 2. E키 입력 확인 (Keyboard.current가 null인지 체크하여 안전하게 처리)
+        // 2. E키 입력 확인
         if (Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame)
         {
-            // 상호작용 가능한 오브젝트가 있으면 Interact() 호출
             if (currentInteractable != null)
             {
                 TryInteract(currentInteractable);
@@ -83,7 +82,6 @@ public class PlayerInteraction : MonoBehaviour
     {
         if (InteractionPromptUI.Instance == null) return;
 
-        // 현재 상호작용 가능한 오브젝트가 있으면 'E' 표시
         if (currentInteractable != null)
         {
             InteractionPromptUI.Instance.ShowAt(currentInteractable.transform);

@@ -910,7 +910,7 @@ MonoBehaviour:
   doorType: 1
   correctKey: 1
   confirmPopup: {fileID: 157566910}
-  nextSceneName: Game_Map_2
+  nextSceneName: 
   playerInventory: {fileID: 1412397406}
 --- !u!212 &627329799
 SpriteRenderer:
