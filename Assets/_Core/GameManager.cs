@@ -3,8 +3,10 @@
 // 게임의 전반적인 흐름을 관리하는 싱글톤 매니저
 // DontDestroyOnLoad로 씬 전환 시에도 유지
 // 0.1.0: 씬 전환 시 열쇠 상태 유지 기능 추가
+// 0.2.0: 다중 열쇠 목록, 퍼즐 나사 상태, 열쇠 C 획득 여부 저장 추가
 // ============================================================
 
+using System.Collections.Generic;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -15,17 +17,20 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance { get; private set; }
 
     // ============================================================
-    // 씬 간 공유 데이터 (열쇠 상태)
+    // 씬 간 공유 데이터 — 열쇠 목록 (최대 3개)
     // ============================================================
-    
-    // 열쇠 보유 여부
-    public bool savedHasKey = false;
-    
-    // 보유 중인 열쇠 타입
-    public KeyType savedCurrentKey;
+    public List<KeyType> savedKeys = new List<KeyType>();
 
     // ============================================================
-    // 자동 생성 - 어느 씬에서 시작해도 GameManager 존재 보장
+    // 씬 간 공유 데이터 — 액자 퍼즐 상태
+    // savedNailRemoved[0~2]: 각 나사의 제거 여부
+    // savedKeyCObtained: 열쇠 C 획득 완료 여부
+    // ============================================================
+    public bool[] savedNailRemoved = new bool[3] { false, false, false };
+    public bool savedKeyCObtained = false;
+
+    // ============================================================
+    // 자동 생성 — 어느 씬에서 시작해도 GameManager 존재 보장
     // ============================================================
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void AutoCreate()
@@ -60,9 +65,8 @@ public class GameManager : MonoBehaviour
     // ============================================================
     public void SaveKeyState(PlayerInventory inventory)
     {
-        savedHasKey = inventory.hasKey;
-        savedCurrentKey = inventory.currentKey;
-        Debug.Log($"[GameManager] 열쇠 상태 저장: hasKey={savedHasKey}, key={savedCurrentKey}");
+        savedKeys = new List<KeyType>(inventory.keys);
+        Debug.Log($"[GameManager] 열쇠 상태 저장: [{string.Join(", ", savedKeys)}]");
     }
 
     // ============================================================
@@ -70,8 +74,18 @@ public class GameManager : MonoBehaviour
     // ============================================================
     public void LoadKeyState(PlayerInventory inventory)
     {
-        inventory.hasKey = savedHasKey;
-        inventory.currentKey = savedCurrentKey;
-        Debug.Log($"[GameManager] 열쇠 상태 복원: hasKey={savedHasKey}, key={savedCurrentKey}");
+        inventory.keys = new List<KeyType>(savedKeys);
+        Debug.Log($"[GameManager] 열쇠 상태 복원: [{string.Join(", ", inventory.keys)}]");
+    }
+
+    // ============================================================
+    // 퍼즐 상태 전체 초기화 (새 게임 시 호출)
+    // ============================================================
+    public void ResetAll()
+    {
+        savedKeys.Clear();
+        savedNailRemoved = new bool[3] { false, false, false };
+        savedKeyCObtained = false;
+        Debug.Log("[GameManager] 전체 상태 초기화");
     }
 }

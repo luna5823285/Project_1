@@ -1,23 +1,19 @@
 // ============================================================
 // PlayerInventory.cs
 // 플레이어의 인벤토리를 관리하는 스크립트
-// 열쇠 보유 여부와 현재 열쇠 타입을 저장
 // 0.1.0: 씬 전환 시 GameManager에서 열쇠 상태 복원
+// 0.2.0: 열쇠 최대 3개 보유 가능한 다중 인벤토리로 전환
 // ============================================================
 
+using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerInventory : MonoBehaviour
 {
     // ============================================================
-    // Inspector 설정 변수 (디버깅용, 게임 중 변경됨)
+    // 열쇠 목록 (최대 3개)
     // ============================================================
-    
-    // 열쇠 보유 여부 (true: 열쇠 있음, false: 열쇠 없음)
-    public bool hasKey = false;
-    
-    // 현재 보유 중인 열쇠 타입 (A 또는 B)
-    public KeyType currentKey;
+    public List<KeyType> keys = new List<KeyType>();
 
     // ============================================================
     // Unity 생명주기 - Start
@@ -25,7 +21,6 @@ public class PlayerInventory : MonoBehaviour
     // ============================================================
     private void Start()
     {
-        // GameManager에 저장된 열쇠 상태가 있으면 복원
         if (GameManager.Instance != null)
         {
             GameManager.Instance.LoadKeyState(this);
@@ -33,23 +28,59 @@ public class PlayerInventory : MonoBehaviour
     }
 
     // ============================================================
-    // 열쇠 획득 메서드
-    // KeySelectPopup에서 플레이어가 열쇠를 선택하면 호출됨
+    // 열쇠 보유 여부 확인
     // ============================================================
-    public void SetKey(KeyType key)
+    public bool HasKey(KeyType key)
     {
-        hasKey = true;
-        currentKey = key;
-        
-        // 키 획득 즉시 GameManager에 저장 (씬 전환 시 door 연결 여부와 무관하게 보존)
+        return keys.Contains(key);
+    }
+
+    // ============================================================
+    // 열쇠 하나라도 보유 중인지 확인
+    // ============================================================
+    public bool HasAnyKey()
+    {
+        return keys.Count > 0;
+    }
+
+    // ============================================================
+    // 열쇠 획득
+    // DrawerPopup(KeySelectPopup), FramePuzzlePanel 등에서 호출
+    // ============================================================
+    public void AddKey(KeyType key)
+    {
+        if (keys.Contains(key))
+        {
+            Debug.LogWarning($"[Inventory] 이미 보유 중인 열쇠: {key}");
+            return;
+        }
+
+        keys.Add(key);
+
+        // GameManager에 즉시 저장 (씬 전환 시 보존)
         if (GameManager.Instance != null)
         {
             GameManager.Instance.SaveKeyState(this);
         }
-        
-        Debug.Log($"[Inventory] 열쇠 획득: {key}");
-        
-        string keyName = key == KeyType.A ? "A" : "B";
-        MessageUI.Instance?.ShowMessage($"Got Key {keyName}");
+
+        Debug.Log($"[Inventory] 열쇠 획득: {key} | 보유 목록: [{string.Join(", ", keys)}]");
+
+        // ItemPopup 표시
+        ItemPopup.Instance?.Show(key);
+    }
+
+    // ============================================================
+    // 열쇠 제거 (사용 후 소모하는 경우를 위해 예비)
+    // ============================================================
+    public void RemoveKey(KeyType key)
+    {
+        if (keys.Remove(key))
+        {
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.SaveKeyState(this);
+            }
+            Debug.Log($"[Inventory] 열쇠 제거: {key}");
+        }
     }
 }

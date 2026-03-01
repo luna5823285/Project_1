@@ -1,7 +1,8 @@
 // ============================================================
 // FrameView.cs
 // 액자(frame) 상호작용을 담당하는 스크립트
-// E키로 상호작용하면 이미지와 설명이 포함된 패널 표시
+// 0.1.x: 단순 이미지 패널 표시
+// 0.2.0: FramePuzzlePanel(퍼즐)을 표시하도록 변경
 // ============================================================
 
 using UnityEngine;
@@ -11,9 +12,9 @@ public class FrameView : MonoBehaviour
     // ============================================================
     // Inspector 설정 변수
     // ============================================================
-    
-    // 표시할 패널 (이미지 + 설명 텍스트가 포함된 Panel)
-    public GameObject viewPanel;
+
+    // 액자 퍼즐 패널 (FramePuzzlePanel 컴포넌트가 있는 GameObject)
+    public GameObject puzzlePanel;
 
     // ============================================================
     // 상호작용 메서드
@@ -21,7 +22,9 @@ public class FrameView : MonoBehaviour
     // ============================================================
     public void Interact()
     {
-        // 패널 표시 (이미지와 설명 텍스트가 미리 배치되어 있음)
-        viewPanel.SetActive(true);
+        if (puzzlePanel != null)
+        {
+            puzzlePanel.SetActive(true);
+        }
     }
 }

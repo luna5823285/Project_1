@@ -1,9 +1,9 @@
 // ============================================================
 // KeySelectPopup.cs
-// 열쇠 선택 팝업 UI를 관리하는 스크립트
-// 버튼 클릭 시 플레이어 인벤토리에 열쇠를 추가하고 팝업 닫기
-// 팝업이 열려있는 동안 플레이어 이동 비활성화
-// ESC 키로 팝업 닫기 가능
+// Drawer 상호작용 시 표시되는 서랍 내부 팝업
+// 0.1.x: 버튼 텍스트 방식
+// 0.2.0: 이미지 기반 리디자인 — 서랍 내부 일러스트 + 열쇠 이미지(버튼)
+//        인벤토리 상태에 따라 열쇠 이미지 오브젝트 활성화/비활성화
 // ============================================================
 
 using UnityEngine;
@@ -14,39 +14,50 @@ public class KeySelectPopup : MonoBehaviour
     // ============================================================
     // Inspector 설정 변수
     // ============================================================
-    
-    // 플레이어의 인벤토리 참조 (열쇠를 추가하기 위해 필요)
+
+    // 플레이어의 인벤토리 참조
     public PlayerInventory playerInventory;
-    
-    // 플레이어의 이동 스크립트 참조 (이동 제어용)
+
+    // 플레이어의 이동 스크립트 참조
     public PlayerMove2D playerMove;
+
+    // 서랍 내부 열쇠 이미지 오브젝트
+    // 미획득 상태: 활성화 / 획득 완료: 비활성화
+    public GameObject keyAObject;  // 열쇠 A 이미지 (클릭 가능한 버튼)
+    public GameObject keyBObject;  // 열쇠 B 이미지 (클릭 가능한 버튼)
 
     // ============================================================
     // Unity 생명주기 - OnEnable
-    // 팝업이 활성화될 때 호출됨
     // ============================================================
     private void OnEnable()
     {
-        // 팝업이 열리면 플레이어 이동 비활성화
-        if (playerMove != null)
-        {
-            playerMove.canMove = false;
-        }
-        
-        // 'E' 표시 숨김
-        if (InteractionPromptUI.Instance != null)
-        {
-            InteractionPromptUI.Instance.Hide();
-        }
+        // 이동 비활성화, 'E' 표시 숨김
+        if (playerMove != null) playerMove.canMove = false;
+        if (InteractionPromptUI.Instance != null) InteractionPromptUI.Instance.Hide();
+
+        // 인벤토리 상태에 따라 열쇠 이미지 갱신
+        RefreshKeyImages();
+    }
+
+    // ============================================================
+    // 열쇠 이미지 활성화 상태 갱신
+    // 이미 획득한 열쇠는 서랍에서 사라진 것으로 표현
+    // ============================================================
+    private void RefreshKeyImages()
+    {
+        if (playerInventory == null) return;
+
+        // 이미 가지고 있는 열쇠는 이미지 비활성화
+        if (keyAObject != null) keyAObject.SetActive(!playerInventory.HasKey(KeyType.A));
+        if (keyBObject != null) keyBObject.SetActive(!playerInventory.HasKey(KeyType.B));
     }
 
     // ============================================================
     // Unity 생명주기 - Update
-    // ESC 키 입력 감지
+    // ESC로 팝업 닫기
     // ============================================================
     private void Update()
     {
-        // ESC 키를 누르면 팝업 닫기
         if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
         {
             gameObject.SetActive(false);
@@ -55,28 +66,31 @@ public class KeySelectPopup : MonoBehaviour
 
     // ============================================================
     // Unity 생명주기 - OnDisable
-    // 팝업이 비활성화될 때 호출됨
     // ============================================================
     private void OnDisable()
     {
-        // 팝업이 닫히면 플레이어 이동 활성화
-        if (playerMove != null)
-        {
-            playerMove.canMove = true;
-        }
+        if (playerMove != null) playerMove.canMove = true;
     }
 
     // ============================================================
     // 열쇠 선택 메서드
-    // Unity UI 버튼의 OnClick 이벤트에서 호출됨
-    // ============================================================
+    // 각 열쇠 이미지 오브젝트(버튼)의 OnClick에서 호출
     // keyIndex: 0 = KeyType.A, 1 = KeyType.B
+    // ============================================================
     public void SelectKey(int keyIndex)
     {
-        // 선택한 keyIndex를 KeyType enum으로 변환하여 인벤토리에 추가
-        playerInventory.SetKey((KeyType)keyIndex);
-        
-        // 팝업 닫기 (OnDisable에서 자동으로 이동 활성화됨)
+        KeyType key = (KeyType)keyIndex;
+
+        // 이미 보유 중인 열쇠는 무시
+        if (playerInventory.HasKey(key))
+        {
+            Debug.Log($"[KeySelectPopup] 이미 보유한 열쇠: {key}");
+            return;
+        }
+
+        playerInventory.AddKey(key);
+
+        // 팝업 닫기 (ItemPopup이 표시되므로 서랍 팝업은 닫음)
         gameObject.SetActive(false);
     }
 }

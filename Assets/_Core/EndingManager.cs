@@ -1,7 +1,9 @@
 // ============================================================
 // EndingManager.cs
 // 엔딩 씬을 관리하는 스크립트
-// 아무 키나 누르면 게임을 종료함 (키보드 + 마우스 클릭 모두 포함)
+// Ending_A 씬과 Ending_B 씬 양쪽에 동일하게 사용 가능
+// 0.1.x: 아무 키/클릭 → 게임 종료
+// 0.2.0: Ending_B 씬 지원 (동일 스크립트, 씬별 텍스트 오브젝트만 다름)
 // ============================================================
 
 using UnityEngine;
@@ -10,21 +12,40 @@ using UnityEngine.InputSystem;
 public class EndingManager : MonoBehaviour
 {
     // ============================================================
+    // 씬 시작 직후 한 프레임 동안 입력을 무시하는 플래그
+    // (씬 전환 직후 키 입력이 잔류하여 즉시 종료되는 현상 방지)
+    // ============================================================
+    private bool inputReady = false;
+
+    // ============================================================
+    // Unity 생명주기 - Start
+    // ============================================================
+    private void Start()
+    {
+        // 씬 시작 후 다음 프레임부터 입력 허용
+        StartCoroutine(EnableInputNextFrame());
+    }
+
+    private System.Collections.IEnumerator EnableInputNextFrame()
+    {
+        yield return null;
+        inputReady = true;
+    }
+
+    // ============================================================
     // Unity 생명주기 - Update
-    // 매 프레임마다 아무 키 입력을 감지
+    // 아무 키 또는 마우스 클릭 시 게임 종료
     // ============================================================
     private void Update()
     {
-        // 키보드의 아무 키나 눌렸는지 확인
+        if (!inputReady) return;
+
         bool keyPressed = Keyboard.current != null && Keyboard.current.anyKey.wasPressedThisFrame;
-        
-        // 마우스 버튼이 눌렸는지 확인
-        bool mousePressed = Mouse.current != null && 
-            (Mouse.current.leftButton.wasPressedThisFrame || 
+        bool mousePressed = Mouse.current != null &&
+            (Mouse.current.leftButton.wasPressedThisFrame ||
              Mouse.current.rightButton.wasPressedThisFrame ||
              Mouse.current.middleButton.wasPressedThisFrame);
 
-        // 키보드 또는 마우스 입력이 있으면 게임 종료
         if (keyPressed || mousePressed)
         {
             QuitGame();
@@ -37,13 +58,11 @@ public class EndingManager : MonoBehaviour
     private void QuitGame()
     {
         Debug.Log("[Ending] 게임을 종료합니다");
-        
-        // Unity Editor에서는 플레이 모드 종료
-        #if UNITY_EDITOR
+
+#if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
-        #else
-        // 빌드된 게임에서는 애플리케이션 종료
+#else
         Application.Quit();
-        #endif
+#endif
     }
 }

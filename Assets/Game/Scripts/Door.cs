@@ -2,7 +2,8 @@
 // Door.cs
 // 문 상호작용을 담당하는 스크립트
 // Move 타입: 다음 씬으로 이동
-// Ending 타입: 열쇠 확인 → 확인 팝업 → 엔딩 씬 이동
+// Ending 타입: 열쇠 확인 → 열쇠 선택 팝업 → 엔딩 씬 이동
+// 0.2.0: 다중 열쇠 인벤토리 API 대응
 // ============================================================
 
 using UnityEngine;
@@ -18,9 +19,6 @@ public class Door : MonoBehaviour
     public DoorType doorType;
 
     [Header("Ending Door Only")]
-    // 엔딩 문을 열기 위한 올바른 열쇠 타입
-    public KeyType correctKey;
-    
     // 엔딩 문의 확인 팝업 (DoorConfirmPopup)
     public DoorConfirmPopup confirmPopup;
 
@@ -52,19 +50,19 @@ public class Door : MonoBehaviour
             return;
         }
 
-        // Ending 타입 문: 열쇠 확인 후 확인 팝업 표시
+        // Ending 타입 문: 열쇠 확인 후 선택 팝업 표시
         // 1. 열쇠를 보유하지 않은 경우
-        if (!playerInventory.hasKey)
+        if (!playerInventory.HasAnyKey())
         {
             Debug.Log("[Door] Need a key");
             MessageUI.Instance?.ShowMessage("Need a key");
             return;
         }
 
-        // 2. 열쇠를 가지고 있으면 확인 팝업 표시
+        // 2. 열쇠를 가지고 있으면 선택 팝업 표시
         if (confirmPopup != null)
         {
-            confirmPopup.Show(playerInventory.currentKey, correctKey);
+            confirmPopup.Show(playerInventory);
         }
     }
 }

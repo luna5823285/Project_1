@@ -1,7 +1,9 @@
 // ============================================================
 // DoorConfirmPopup.cs
-// door_2 상호작용 시 열쇠 사용 확인 팝업 관리
-// "Would you like to open the door with the key?" + Yes/No 버튼
+// door_2 상호작용 시 열쇠 선택 팝업 관리
+// 0.1.x: "Would you like to open the door?" + Yes/No
+// 0.2.0: "Which key do you want to use?" + 보유 열쇠별 버튼 표시
+//        열쇠 C → Ending_B, 열쇠 A/B → Ending_A 씬 분기
 // ============================================================
 
 using UnityEngine;
@@ -14,61 +16,56 @@ public class DoorConfirmPopup : MonoBehaviour
     // ============================================================
     // Inspector 설정 변수
     // ============================================================
-    
-    // 플레이어의 이동 스크립트 참조 (이동 제어용)
+
+    // 플레이어 이동 스크립트 참조
     public PlayerMove2D playerMove;
-    
-    // 메시지 텍스트
+
+    // 안내 문구 텍스트
     public TextMeshProUGUI messageText;
+
+    // 열쇠별 버튼 오브젝트 (미리 배치, 인벤토리 상태에 따라 활성화)
+    public GameObject keyAButton;  // 열쇠 A 버튼
+    public GameObject keyBButton;  // 열쇠 B 버튼
+    public GameObject keyCButton;  // 열쇠 C 버튼
 
     // ============================================================
     // 내부 변수
     // ============================================================
-    
-    // 플레이어가 가진 열쇠 타입
-    private KeyType playerKey;
-    
-    // 문을 열기 위한 올바른 열쇠 타입
-    private KeyType correctKey;
+
+    private PlayerInventory playerInventory;
 
     // ============================================================
     // 팝업 표시 메서드
     // Door.cs에서 호출
     // ============================================================
-    public void Show(KeyType playerKey, KeyType correctKey)
+    public void Show(PlayerInventory inventory)
     {
-        this.playerKey = playerKey;
-        this.correctKey = correctKey;
-        messageText.text = "Would you like to open the door with the key?";
+        playerInventory = inventory;
+        messageText.text = "Which key do you want to use?";
+
+        // 보유 중인 열쇠에 해당하는 버튼만 활성화
+        if (keyAButton != null) keyAButton.SetActive(inventory.HasKey(KeyType.A));
+        if (keyBButton != null) keyBButton.SetActive(inventory.HasKey(KeyType.B));
+        if (keyCButton != null) keyCButton.SetActive(inventory.HasKey(KeyType.C));
+
         gameObject.SetActive(true);
     }
 
     // ============================================================
     // Unity 생명주기 - OnEnable
-    // 팝업이 활성화될 때 호출됨
     // ============================================================
     private void OnEnable()
     {
-        // 팝업이 열리면 플레이어 이동 비활성화
-        if (playerMove != null)
-        {
-            playerMove.canMove = false;
-        }
-        
-        // 'E' 표시 숨김
-        if (InteractionPromptUI.Instance != null)
-        {
-            InteractionPromptUI.Instance.Hide();
-        }
+        if (playerMove != null) playerMove.canMove = false;
+        if (InteractionPromptUI.Instance != null) InteractionPromptUI.Instance.Hide();
     }
 
     // ============================================================
     // Unity 생명주기 - Update
-    // ESC 키 입력 감지
+    // ESC로 팝업 닫기
     // ============================================================
     private void Update()
     {
-        // ESC 키를 누르면 팝업 닫기
         if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
         {
             gameObject.SetActive(false);
@@ -77,45 +74,38 @@ public class DoorConfirmPopup : MonoBehaviour
 
     // ============================================================
     // Unity 생명주기 - OnDisable
-    // 팝업이 비활성화될 때 호출됨
     // ============================================================
     private void OnDisable()
     {
-        // 팝업이 닫히면 플레이어 이동 활성화
-        if (playerMove != null)
-        {
-            playerMove.canMove = true;
-        }
+        if (playerMove != null) playerMove.canMove = true;
     }
 
     // ============================================================
-    // Yes 버튼 클릭
-    // Unity UI Button의 OnClick 이벤트에서 호출됨
+    // 열쇠 선택 메서드
+    // 각 버튼의 OnClick에서 호출
+    // keyIndex: 0 = A, 1 = B, 2 = C
     // ============================================================
-    public void OnYesClicked()
+    public void SelectKey(int keyIndex)
     {
-        if (playerKey == correctKey)
+        KeyType selectedKey = (KeyType)keyIndex;
+        Debug.Log($"[DoorConfirmPopup] 선택한 열쇠: {selectedKey}");
+
+        // 열쇠 C → Ending_B, 열쇠 A / B → Ending_A
+        if (selectedKey == KeyType.C)
         {
-            // 올바른 열쇠: 엔딩 씬으로 이동
-            Debug.Log("[Door] 성공! 엔딩 씬으로 이동합니다");
-            SceneManager.LoadScene("Ending");
+            SceneManager.LoadScene("Ending_B");
         }
         else
         {
-            // 잘못된 열쇠: 메시지 표시 후 팝업 닫기
-            Debug.Log("[Door] 열쇠가 맞지 않습니다");
-            MessageUI.Instance?.ShowMessage("The key doesn't fit.");
-            gameObject.SetActive(false);
+            SceneManager.LoadScene("Ending_A");
         }
     }
 
     // ============================================================
-    // No 버튼 클릭
-    // Unity UI Button의 OnClick 이벤트에서 호출됨
+    // 취소 버튼 / ESC 역할 (팝업 닫기)
     // ============================================================
-    public void OnNoClicked()
+    public void OnCancelClicked()
     {
-        // 팝업 닫기 → 게임으로 복귀
         gameObject.SetActive(false);
     }
 }
